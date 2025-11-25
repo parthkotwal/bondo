@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.models.docs_models import DocSearchRequest, DocSearchResponse, DocSnippet
+from app.models.docs import DocSearchRequest, DocSearchResponse, DocSnippet
 
 router = APIRouter(prefix="/docs", tags=["docs"])
 

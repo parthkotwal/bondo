@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.api.router import router as api_router
-from app.models.utils_models import HealthResponse
+from app.models.utils import HealthResponse
 
 app = FastAPI(
     title="bondo backend",

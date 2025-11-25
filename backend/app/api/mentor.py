@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.models.mentor_models import MentorHelpRequest, MentorHelpResponse
-from app.models.docs_models import DocSnippet
+from app.models.mentor import MentorHelpRequest, MentorHelpResponse
+from app.models.docs import DocSnippet
 
 router = APIRouter(prefix="/mentor", tags=["mentor"])
 

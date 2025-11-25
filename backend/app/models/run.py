@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from typing import List, Optional
 
 class RunRequest(BaseModel):
     code: str
+    timeout_seconds: int | None = None
     # later we can add: dataset stub, params, etc.
 
 class RunResult(BaseModel):

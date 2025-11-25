@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from app.models.docs_models import DocSnippet
+from app.models.docs import DocSnippet
 
 class MentorHelpRequest(BaseModel):
     code: str
