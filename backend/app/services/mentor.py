@@ -60,8 +60,9 @@ def mentor_help(
     """
     # 1. Retrieve docs via RAG
     rag_results = search_docs(
-        query=error if error else code,
+        query=error or code,
         top_k=5,
+        code=code
     )
 
     # 2. Build system message for this library

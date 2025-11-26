@@ -7,6 +7,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from app.ingestion.config import VECTORSTORE_DIR, EMBED_MODEL_NAME
 from app.models.docs import DocSnippet
+from app.services.api_extraction import extract_api_tokens
 
 METADATA_FILE = VECTORSTORE_DIR / "sklearn_doc_metadata.jsonl"
 FAISS_INDEX_FILE = VECTORSTORE_DIR / "sklearn_doc_index.faiss"
@@ -62,9 +63,9 @@ def _ensure_loaded() -> None:
     _model = SentenceTransformer(EMBED_MODEL_NAME)
     
 
-def search_docs(query: str, top_k: int = 5) -> List[DocSnippet]:
+def search_docs(query: str, top_k: int = 5, code: str | None=None) -> List[DocSnippet]:
     """
-    Run semantic search over scikit-learn doc chunks and return top-k snippets.
+    Run semantic search over doc chunks and return top-k snippets.
     """
     _ensure_loaded()
     assert _index is not None
@@ -72,6 +73,8 @@ def search_docs(query: str, top_k: int = 5) -> List[DocSnippet]:
     
     if top_k <= 0:
         return []
+    
+    api_tokens = extract_api_tokens(code) if code else []
     
     query_vec: np.ndarray = _model.encode(
         [query],
@@ -82,25 +85,41 @@ def search_docs(query: str, top_k: int = 5) -> List[DocSnippet]:
     if query_vec.ndim == 1:
         query_vec = query_vec.reshape(1, -1)
         
-    k = min(top_k, _index.ntotal)
-    scores, indices = _index.search(query_vec, k)
+    k = min(max(top_k*3,10), _index.ntotal)
+    semantic_scores, semantic_indices = _index.search(query_vec, k)
     
-    results: List[DocSnippet] = []
-    for idx, score in zip(indices[0], scores[0]):
+    scored_results = []
+
+    for idx, base_score in zip(semantic_indices[0], semantic_scores[0]):
         if idx < 0 or idx >= len(_metadata):
             continue
+
         meta = _metadata[idx]
+        text = meta.get("text", "")
+        url = meta.get("url", "") or ""
 
-        # Build a usable title: use 'source' or URL or a fallback
-        title = meta.get("source") or meta.get("url") or "scikit-learn docs"
+        keyword_count = sum(tok.lower() in text.lower() for tok in api_tokens)
+        keyword_score = keyword_count * 0.05
 
+        url_boost_count = sum(tok.lower() in url.lower() for tok in api_tokens)
+        metadata_boost = url_boost_count * 0.10
+
+        final_score = (base_score * 0.75) + (keyword_score * 0.20) + (metadata_boost * 0.05)
+        scored_results.append((final_score, idx))
+
+    scored_results.sort(key=lambda x: x[0], reverse=True)
+    final_indices = [i for (_, i) in scored_results[:top_k]]
+
+    results: List[DocSnippet] = []
+    for i in final_indices:
+        meta = _metadata[i]
         snippet = DocSnippet(
-            id=meta.get("id", f"chunk-{idx}"),
-            title=title,
+            id=meta.get("id", f"chunk-{i}"),
+            title=meta.get("title", "scikit-learn docs"),
             url=meta.get("url"),
             text=meta.get("text", ""),
-            score=float(score),
+            score=float(1.0), 
         )
         results.append(snippet)
-        
+
     return results
