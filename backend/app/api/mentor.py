@@ -11,5 +11,6 @@ def mentor_help_endpoint(req: MentorHelpRequest):
     return mentor_help(
         code=req.code,
         error=req.error,
-        library_name=library_name,
+        question=req.question,
+        library_name=library_name
     )

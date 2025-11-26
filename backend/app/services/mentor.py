@@ -6,31 +6,51 @@ from app.services.rag import search_docs
 from app.models.docs import DocSnippet
 from app.models.mentor import MentorHelpResponse
 
-def build_user_message(code: str, error: str | None, doc_snippets: List[DocSnippet]) -> str:
+def build_user_message(
+    code: str, 
+    error: str | None, 
+    question: str | None, 
+    doc_snippets: List[DocSnippet]
+) -> str:
     """
-    Combine code, error, and doc snippets into a single user message for the LLM.
+    Combine user intent, code, error, and doc snippets into a single user message for the LLM.
     """
-    doc_texts = [
-        f"[DOC {i}]\nTitle: {s.title}\nURL: {s.url}\nText:\n{s.text}"
-        for i, s in enumerate(doc_snippets)
-    ]
-    docs_block = "\n\n".join(doc_texts)
+    docs_json = []
+    for doc in doc_snippets:
+        docs_json.append({
+            "id": doc.id,
+            "title": doc.title,
+            "text": doc.text,
+            "url": doc.url,
+            "score": doc.score
+        })
 
     return f"""
+    User Intent (if any):
+    {question or "(none)"}
+
     User Code: 
     {code}
     
     Error Output:
     {error or "(none)"}
     
-    Relevant Documentation Snippets:
-    {docs_block}
+    Documentation Snippets (JSON array):
+    {json.dumps(docs_json, indent=2)}
     
-    Now, explain the issue and provide a fix as per your given instructions.
+    IMPORTANT:
+    - Use ONLY the exact values from the JSON documentation snippets.
+    - NEVER modify or extend URLs, IDs, or titles.
+    - doc_references.text MUST be a short excerpt (1–3 sentences) directly from the snippet's text
     """.strip()
     
     
-def mentor_help(code: str, error: str | None, library_name: str) -> MentorHelpResponse:
+def mentor_help(
+    code: str, 
+    error: str | None,
+    question: str | None, 
+    library_name: str
+) -> MentorHelpResponse:
     """
     High-level orchestrator:
       - retrieve documentation
@@ -53,6 +73,7 @@ def mentor_help(code: str, error: str | None, library_name: str) -> MentorHelpRe
     user_content = build_user_message(
         code=code,
         error=error,
+        question=question,
         doc_snippets=rag_results,
     )
 
