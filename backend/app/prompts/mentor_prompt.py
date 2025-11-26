@@ -50,10 +50,16 @@ Return exactly:
   ]
 }}
 
-Rules for suggested_fix:
-- If a fix is needed, return ONLY the minimal corrected code block.
-- If no fix is needed, return "No change needed."
-- Never return multiple alternative solutions.
+Rules for suggested_fix (IMPORTANT):
+- Return ONLY the minimal set of changed or added lines.
+- Do NOT return the full file.
+- Do NOT repeat unchanged lines.
+- Do NOT include explanations, comments, or annotations.
+- The output must be a plain code block containing ONLY the necessary changes.
+- If multiple lines must change, group them together inside the code block.
+- No diff headers (e.g., "---" or "+++") unless they are part of the actual fix.
+- If no changes are needed, return exactly: "No change needed."
+
 
 Your output must be valid JSON and contain *no other text*.
 """.strip()

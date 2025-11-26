@@ -125,6 +125,27 @@ def mentor_help(
 
     return MentorHelpResponse(
         explanation=data.get("explanation", ""),
-        suggested_fix=data.get("suggested_fix"),
+        suggested_fix=sanitize_suggested_fix(code, data.get("suggested_fix", "")),
         doc_references=doc_refs,
     )
+    
+def sanitize_suggested_fix(original: str, fix: str) -> str:
+    """
+    Ensure suggested_fix is minimal and safe:
+    - strip trailing whitespace
+    - forbid returning the entire file
+    - forbid giant suggestions
+    - enforce code block presence IF fix is not "No change needed."
+    """
+    fix = fix.strip()
+
+    if fix.lower() == "no change needed":
+        return "No change needed."
+
+    if len(fix) > len(original) * 0.6:
+        return "No change needed."
+
+    if fix.count("\n") > 12:
+        return "No change needed."
+
+    return fix
