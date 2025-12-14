@@ -6,6 +6,9 @@ TEXT_DIR = DATA_DIR / "text"
 
 VECTORSTORE_DIR = DATA_DIR / "vectorstore"
 
+MAX_GENERATED_API_PAGES = 500
+REQUEST_DELAY_SECONDS = 0.1
+
 # Add more URLs later
 DOC_URLS = [
     "https://scikit-learn.org/stable/user_guide.html",

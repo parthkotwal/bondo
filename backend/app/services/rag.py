@@ -62,6 +62,17 @@ def _ensure_loaded() -> None:
     print(f"[RAG] Loading embedding model: {EMBED_MODEL_NAME}")
     _model = SentenceTransformer(EMBED_MODEL_NAME)
     
+def is_index_like_url(url: str | None) -> bool:
+    if not url:
+        return True
+    u = url.lower()
+    return (
+        u.endswith("/index.html")
+        or "/api/index" in u
+        or "/user_guide" in u
+        or "/modules/classes" in u
+    )
+    
 
 def search_docs(query: str, top_k: int = 5, code: str | None=None) -> List[DocSnippet]:
     """
@@ -121,5 +132,13 @@ def search_docs(query: str, top_k: int = 5, code: str | None=None) -> List[DocSn
             score=float(1.0), 
         )
         results.append(snippet)
+
+    generated = [r for r in results if r.url and "/generated/" in r.url]
+    if generated:
+        return generated
+    
+    non_index = [r for r in results if not is_index_like_url(r.url)]
+    if non_index:
+        return non_index
 
     return results

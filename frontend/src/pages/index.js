@@ -22,38 +22,6 @@ print("coef_", model.coef_)`);
   const [loading, setLoading] = useState(false);
 
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
-  
-  function isIndexLikeUrl(url) {
-    if (!url) return true;
-
-    const lowered = url.toLowerCase();
-    return (
-      lowered.endsWith("/index.html") ||
-      lowered.endsWith("/api.html") ||
-      lowered.endsWith("/user_guide.html") ||
-      lowered.includes("/api/index") ||
-      lowered.includes("/modules/classes")
-    );
-  }
-
-  function chooseBestDocUrl(docRefs) {
-    if (!Array.isArray(docRefs)) return null;
-
-    // 1. Strong preference: generated API reference pages
-    const generated = docRefs.find(
-      r => r.url && r.url.includes("/generated/")
-    );
-    if (generated) return generated.url;
-
-    // 2. Non-index pages
-    const nonIndex = docRefs.find(
-      r => r.url && !isIndexLikeUrl(r.url)
-    );
-    if (nonIndex) return nonIndex.url;
-
-    // 3. Fallback
-    return docRefs.find(r => r.url)?.url || null;
-  }
 
   async function runCode() {
     setLoading(true);
@@ -77,7 +45,8 @@ print("coef_", model.coef_)`);
 
       setMentor(mentorRes.data);
 
-      const docUrl = chooseBestDocUrl(mentorRes.data?.doc_references);
+      const docUrl = mentorRes.data?.doc_references?.[0]?.url || null;
+      console.log("Doc URL:", docUrl);
       setActiveDocUrl(docUrl);
 
       console.log(

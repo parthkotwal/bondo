@@ -5,7 +5,12 @@ from typing import List, Dict
 import requests
 from bs4 import BeautifulSoup
 from markdownify import markdownify as html_to_md
-from app.ingestion.config import RAW_HTML_DIR, TEXT_DIR, DOC_URLS
+import re
+from urllib.parse import urljoin
+from app.ingestion.config import (
+    RAW_HTML_DIR, TEXT_DIR, DOC_URLS, 
+    MAX_GENERATED_API_PAGES, REQUEST_DELAY_SECONDS
+)
 
 
 def ensure_dirs() -> None:
@@ -66,6 +71,21 @@ def clean_html_to_text(html: str) -> str:
     md = html_to_md(str(main))
     return md
 
+def extract_generated_api_urls(html: str, base_url: str) -> List[str]:
+    """
+    Extract scikit-learn generated API reference links from the API index page.
+    We look for links containing 'modules/generated/sklearn' and ending in .html.
+    Returns absolute URLs.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    urls = set()
+
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if "modules/generated/sklearn" in href and href.endswith(".html"):
+            urls.add(urljoin(base_url, href))
+
+    return sorted(urls)
 
 
 def chunk_text(text: str, max_chars: int = 1200, overlap: int = 200) -> List[str]:
@@ -96,16 +116,45 @@ def chunk_text(text: str, max_chars: int = 1200, overlap: int = 200) -> List[str
 
 def build_doc_chunks() -> List[Dict]:
     """
-    For each URL:
-      - download or load cached HTML
-      - clean to text
-      - chunk into pieces
-    Returns a list of dicts representing doc chunks.
+    Crawl seed docs + expand from api/index.html into generated API pages.
     """
     ensure_dirs()
     all_chunks: List[Dict] = []
 
+    # 1) Start with the seed URLs
+    to_crawl: List[str] = list(DOC_URLS)
+    seen: set[str] = set(to_crawl)
+
+    # 2) First pass: fetch seeds and, if api/index.html, expand to generated API pages
+    expanded_urls: List[str] = []
+
     for url in DOC_URLS:
+        html = load_or_fetch_html(url)
+
+        # Expand only from the API index page
+        if url.rstrip("/").endswith("/stable/api/index.html"):
+            generated_urls = extract_generated_api_urls(html, base_url=url)
+            print(f"Found {len(generated_urls)} generated API links on {url}")
+
+            # Cap for MVP
+            generated_urls = generated_urls[:MAX_GENERATED_API_PAGES]
+            print(f"Will crawl first {len(generated_urls)} generated API pages (cap={MAX_GENERATED_API_PAGES})")
+
+            for g in generated_urls:
+                if g not in seen:
+                    expanded_urls.append(g)
+                    seen.add(g)
+
+    # Add expanded URLs to crawl queue
+    to_crawl.extend(expanded_urls)
+
+    print(f"Total URLs to crawl: {len(to_crawl)}")
+
+    # 3) Crawl everything in to_crawl and chunk it
+    for url in to_crawl:
+        # optional small delay so we don't hammer the docs site
+        time.sleep(REQUEST_DELAY_SECONDS)
+
         html = load_or_fetch_html(url)
         text = clean_html_to_text(html)
 
