@@ -1,0 +1,66 @@
+.
+├── .gitignore
+├── README.md
+├── backend
+│   ├── app
+│   │   ├── __init__.py
+│   │   ├── api
+│   │   │   ├── docs.py
+│   │   │   ├── mentor.py
+│   │   │   ├── router.py
+│   │   │   └── run.py
+│   │   ├── data
+│   │   │   ├── raw_html/ 
+│   │   │   ├── text
+│   │   │   └── vectorstore
+│   │   │    ├── sklearn_doc_embeddings.npy
+│   │   │    ├── sklearn_doc_index.faiss
+│   │   │    └── sklearn_doc_metadata.jsonl
+│   │   ├── ingestion
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py
+│   │   │   ├── embed_index.py
+│   │   │   └── fetch_chunk.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   │   ├── docs.py
+│   │   │   ├── mentor.py
+│   │   │   ├── run.py
+│   │   │   └── utils.py
+│   │   ├── prompts
+│   │   │   └── mentor_prompt.py
+│   │   └── services
+│   │       ├── api_extraction.py
+│   │       ├── executor.py
+│   │       ├── llm_client.py
+│   │       ├── mentor.py
+│   │       └── rag.py
+│   └── requirements.txt
+├── frontend
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.mjs
+│   ├── jsconfig.json
+│   ├── next.config.mjs
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── sklearn_docs.jsonl
+│   │   ├── vercel.svg
+│   │   └── window.svg
+│   └── src
+│       ├── components
+│       │   └── DocsIframePanel.js
+│       ├── pages
+│       │   ├── _app.js
+│       │   ├── _document.js
+│       │   ├── api
+│       │   │   └── hello.js
+│       │   └── index.js
+│       └── styles
+│           └── globals.css

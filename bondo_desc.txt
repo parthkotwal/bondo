@@ -1,0 +1,21 @@
+bondo
+bondo is an AI-powered coding mentor that helps you learn new libraries by coding with their official documentation.
+You write and run code in a playground, and bondo follows along — watching what you try, noticing errors, and using the real docs to explain what’s going on and what to look at next. It doesn’t replace documentation or magically write everything for you; it helps you understand the docs while you’re actually using them.
+What it’s like to use
+You pick a library, start coding, and bondo acts like a helpful mentor sitting next to you:
+Explains errors and confusing behavior using the library’s docs
+Points you to the most relevant APIs or doc pages at the right moment
+Suggests small, focused changes instead of rewriting your code
+Can explain what a piece of code is doing and why it works
+Occasionally nudges you with examples or small exercises to try
+The idea is simple: learn by doing, with guidance that’s grounded in the documentation you’d be reading anyway.
+What makes bondo different
+Most AI coding tools focus on giving answers.
+bondo focuses on teaching.
+It treats official docs as the source of truth
+It doesn’t invent APIs or hide how things work
+It stays close to your code, your errors, and the real documentation
+Instead of being a black box, bondo helps you build confidence reading and using docs on your own.
+The idea behind it
+The best way to learn a library is still to read its documentation — it’s just a lot easier with a good mentor.
+bondo is meant to be that mentor: doc-aware, practical, and focused on helping you actually learn the tools you’re using.
